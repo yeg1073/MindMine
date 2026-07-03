@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思维雷区 MindMine v1.1</title>
+    <style>
+        :root {
+            --bg-color: #1a1e24;
+            --card-bg: #252b35;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --danger-red: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-left: 4px solid var(--accent-blue);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .input-section {
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background-color: #1a1e24;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            resize: none;
+            margin-bottom: 16px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #2563eb;
+        }
+
+        .headline {
+            font-size: 1.1rem;
+            margin: 24px 0 12px 0;
+            color: var(--text-muted);
+            border-left: 3px solid var(--accent-blue);
+            padding-left: 8px;
+        }
+
+        .radar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .radar-card {
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .radar-card.danger-high { border-color: #f87171; background-color: #2d1f24; }
+        .radar-card.danger-mid { border-color: #fb923c; background-color: #2d241f; }
+
+        .card-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 6px; }
+        .card-count { font-size: 0.8rem; color: var(--text-muted); }
+
+        .log-item {
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 3px solid #3b82f6;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .log-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+        .log-text { font-size: 0.95rem; line-height: 1.5; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>MindMine</h1>
+        <div class="subtitle">我负责随性吐槽，AI 负责深度织网</div>
+    </header>
+
+    <div class="tip-box">
+        💡 <strong>今日防坑指南：</strong> 做极限题时手别犯贱！先看清是加减还是乘除，减法里乱用等价无穷小就是精准踩雷。
+    </div>
+
+    <!-- 输入区 -->
+    <div class="input-section">
+        <textarea id="vibeInput" placeholder="刚做完题？把你的翻车思路、和标准答案的偏差大白话喷在这里..."></textarea>
+        <button onclick="captureVibe()">捕捉这一刻的翻车思路</button>
+    </div>
+
+    <!-- 优化：历史切片上移，方便直接看到结果 -->
+    <div class="headline">历史思维切片</div>
+    <div id="logList">
+        <div class="log-item" style="border-left-color: #475569;">
+            <div class="log-meta">2026/07/03 15:30 · 样例记录</div>
+            <div class="log-text">我一看到减法结构就惯性代换，完全忘了减法代换会把高阶无穷小直接抹掉导致精度不够！标准答案全是用泰勒展开的，以后见到减法先拔刀退后三步，想想泰勒！</div>
+        </div>
+    </div>
+
+    <!-- 雷区热力看板 -->
+    <div class="headline">当前思维雷区热力图</div>
+    <div class="radar-grid">
+        <div class="radar-card danger-high">
+            <div class="card-title" style="color: #f87171;">等价无穷小误用</div>
+            <div class="card-count">已翻车 5 次</div>
+        </div>
+        <div class="radar-card danger-mid">
+            <div class="card-title" style="color: #fb923c;">泰勒展开项数不够</div>
+            <div class="card-count">已翻车 3 次</div>
+        </div>
+        <div class="radar-card">
+            <div class="card-title">局部uv型幂指函数</div>
+            <div class="card-count">已翻车 1 次</div>
+        </div>
+        <div class="radar-card">
+            <div class="card-title">定积分对称性</div>
+            <div class="card-count">已翻车 0 次</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 确保大脑函数完整闭合
+    function captureVibe() {
+        const input = document.getElementById('vibeInput');
+        const logList = document.getElementById('logList');
+        
+        if (!input.value.trim()) {
+            alert('你还没开始吐槽呢！');
+            return;
+        }
+
+        // 核心交互反馈：弹窗提示
+        alert('🎉 成功捕捉思维雷区！');
+
+        // 创建新卡片
+        const newItem = document.createElement('div');
+        newItem.className = 'log-item';
+        
+        const now = new Date();
+        const timeStr = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+        newItem.innerHTML = `
+            <div class="log-meta">${timeStr} · 刚刚捕捉</div>
+            <div class="log-text">${input.value}</div>
+        `;
+
+        // 插入到最上方
+        logList.insertBefore(newItem, logList.firstChild);
+        
+        // 清空输入框
+        input.value = '';
+    }
+</script>
+
+</body>
+</html>
